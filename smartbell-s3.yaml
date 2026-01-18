@@ -1,0 +1,249 @@
+esphome:
+  name: smartbell-s3
+  friendly_name: SmartBell (S3)
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "vljD+EKGAkrI1dziObCi9JVL+WEQkogdYed9GrNbBCY="
+
+ota:
+  - platform: esphome
+    password: "1a471b63ecacd05f1e3ce15890786514"
+
+wifi:
+  networks:
+  - ssid: !secret wifi_ssid
+    password: !secret wifi_password
+  manual_ip:
+    static_ip: 192.168.2.149
+    gateway: 192.168.2.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Smartbell-S3 Fallback Hotspot"
+    password: "JZfiIhpsUC2w"
+
+captive_portal:
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+i2c:
+  - id: camera_i2c
+    sda: GPIO4
+    scl: GPIO5
+esp32_camera:
+  external_clock:
+    pin: GPIO15
+    frequency: 20MHz
+  i2c_id: camera_i2c
+  data_pins: [GPIO11, GPIO9, GPIO8, GPIO10, GPIO12, GPIO18, GPIO17, GPIO16]
+  vsync_pin: GPIO6
+  href_pin: GPIO7
+  pixel_clock_pin: GPIO13
+  resolution: 800x600
+  jpeg_quality: 10
+  max_framerate: 20fps
+  idle_framerate: 0.1fps
+  frame_buffer_count: 2
+  vertical_flip: false
+  horizontal_mirror: false
+  aec_mode: AUTO
+  aec2: True
+  name: SmartBell (S3 Cam)
+
+uart:
+  tx_pin: GPIO39
+  rx_pin: GPIO38
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
+ld2410:
+
+binary_sensor:
+  - platform: ld2410
+    has_target:
+      name: Presence
+    has_moving_target:
+      name: Moving Target
+    has_still_target:
+      name: Still Target
+    out_pin_presence_status:
+      name: Out pin presence status
+  - platform: gpio
+    name: "Ring Ring"
+    pin: 
+      number: GPIO2
+      mode: INPUT_PULLUP
+      inverted: true
+
+sensor:
+  - platform: adc
+    pin: GPIO1
+    name: "TMP36 Temperature"
+    device_class: "temperature"
+    state_class: "measurement"
+    unit_of_measurement: "°C"
+    update_interval: 10s
+    attenuation: 11db 
+    filters:
+      - sliding_window_moving_average:
+          window_size: 15
+          send_every: 1
+      - calibrate_linear:
+          - 0.500 -> 0.0
+          - 0.750 -> 25.0
+      - offset: 13.2
+  - platform: ld2410
+    light:
+      name: Light
+    moving_distance:
+      name: Moving Distance
+    still_distance:
+      name: Still Distance
+    moving_energy:
+      name: Move Energy
+    still_energy:
+      name: Still Energy
+    detection_distance:
+      name: Detection Distance
+    g0:
+      move_energy:
+        name: G0 move energy
+      still_energy:
+        name: G0 still energy
+    g1:
+      move_energy:
+        name: G1 move energy
+      still_energy:
+        name: G1 still energy
+    g2:
+      move_energy:
+        name: G2 move energy
+      still_energy:
+        name: G2 still energy
+    g3:
+      move_energy:
+        name: G3 move energy
+      still_energy:
+        name: G3 still energy
+    g4:
+      move_energy:
+        name: G4 move energy
+      still_energy:
+        name: G4 still energy
+    g5:
+      move_energy:
+        name: G5 move energy
+      still_energy:
+        name: G5 still energy
+    g6:
+      move_energy:
+        name: G6 move energy
+      still_energy:
+        name: G6 still energy
+    g7:
+      move_energy:
+        name: G7 move energy
+      still_energy:
+        name: G7 still energy
+    g8:
+      move_energy:
+        name: G8 move energy
+      still_energy:
+        name: G8 still energy
+
+switch:
+  - platform: ld2410
+    engineering_mode:
+      name: Engineering mode
+    bluetooth:
+      name: Control bluetooth
+
+number:
+  - platform: ld2410
+    timeout:
+      name: Timeout
+    light_threshold:
+      name: Light threshold
+    max_move_distance_gate:
+      name: Max move distance gate
+    max_still_distance_gate:
+      name: Max still distance gate
+    g0:
+      move_threshold:
+        name: G0 move threshold
+      still_threshold:
+        name: G0 still threshold
+    g1:
+      move_threshold:
+        name: G1 move threshold
+      still_threshold:
+        name: G1 still threshold
+    g2:
+      move_threshold:
+        name: G2 move threshold
+      still_threshold:
+        name: G2 still threshold
+    g3:
+      move_threshold:
+        name: G3 move threshold
+      still_threshold:
+        name: G3 still threshold
+    g4:
+      move_threshold:
+        name: G4 move threshold
+      still_threshold:
+        name: G4 still threshold
+    g5:
+      move_threshold:
+        name: G5 move threshold
+      still_threshold:
+        name: G5 still threshold
+    g6:
+      move_threshold:
+        name: G6 move threshold
+      still_threshold:
+        name: G6 still threshold
+    g7:
+      move_threshold:
+        name: G7 move threshold
+      still_threshold:
+        name: G7 still threshold
+    g8:
+      move_threshold:
+        name: G8 move threshold
+      still_threshold:
+        name: G8 still threshold
+
+button:
+  - platform: ld2410
+    factory_reset:
+      name: Factory reset
+    restart:
+      name: Restart
+    query_params:
+      name: Query params
+
+select:
+  - platform: ld2410
+    distance_resolution:
+      name: Distance resolution
+    baud_rate:
+      name: Baud rate
+    light_function:
+      name: Light function
+    out_pin_level:
+      name: Out pin level
